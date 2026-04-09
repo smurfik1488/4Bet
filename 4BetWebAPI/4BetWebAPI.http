@@ -1,0 +1,6 @@
+@_4BetWebAPI_HostAddress = http://localhost:5031
+
+GET {{_4BetWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
