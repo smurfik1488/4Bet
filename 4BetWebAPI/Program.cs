@@ -21,6 +21,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<IVerificationRepository, VerificationRepository>();
+builder.Services.AddScoped<ISportRepository, SportRepository>();
 builder.Services.AddScoped<IAdminVerificationService, AdminVerificationService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
