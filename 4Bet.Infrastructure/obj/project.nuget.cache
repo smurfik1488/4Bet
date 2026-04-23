@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QSMrQBIjmZQ=",
+  "dgSpecHash": "bEYMrmZiZp8=",
   "success": true,
-  "projectFilePath": "C:\\Users\\PC\\Desktop\\Курсова\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\PC\\Desktop\\Сoursework\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\PC\\.nuget\\packages\\aspire.npgsql.entityframeworkcore.postgresql\\13.2.2\\aspire.npgsql.entityframeworkcore.postgresql.13.2.2.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

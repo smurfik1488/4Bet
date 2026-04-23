@@ -3862,11 +3862,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\PC\\Desktop\\Курсова\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\PC\\Desktop\\Сoursework\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
       "projectName": "4Bet.Infrastructure",
-      "projectPath": "C:\\Users\\PC\\Desktop\\Курсова\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
+      "projectPath": "C:\\Users\\PC\\Desktop\\Сoursework\\4Bet\\4Bet\\4Bet.Infrastructure\\4Bet.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\PC\\Desktop\\Курсова\\4Bet\\4Bet\\4Bet.Infrastructure\\obj\\",
+      "outputPath": "C:\\Users\\PC\\Desktop\\Сoursework\\4Bet\\4Bet\\4Bet.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

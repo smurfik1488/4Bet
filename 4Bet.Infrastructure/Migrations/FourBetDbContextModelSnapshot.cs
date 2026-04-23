@@ -66,6 +66,55 @@ namespace _4Bet.Infrastructure.Migrations
 
                     b.ToTable("Users");
                 });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.VerificationRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("VerificationRequests");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.VerificationRequest", b =>
+                {
+                    b.HasOne("_4Bet.Infrastructure.Domain.User", "User")
+                        .WithMany("VerificationRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.User", b =>
+                {
+                    b.Navigation("VerificationRequests");
+                });
 #pragma warning restore 612, 618
         }
     }

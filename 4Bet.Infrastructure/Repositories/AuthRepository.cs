@@ -19,7 +19,7 @@ public class AuthRepository : IAuthRepository
             .FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
     }
 
-    public async Task<User?> GetByIdAsync(int id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
         return await _context.Users.FindAsync(id);
     }

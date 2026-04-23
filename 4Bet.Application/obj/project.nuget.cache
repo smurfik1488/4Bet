@@ -1,12 +1,17 @@
 {
   "version": 2,
-  "dgSpecHash": "hvP40Pb0OQQ=",
+  "dgSpecHash": "p7vEPEmJEp0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\PC\\Desktop\\Курсова\\4Bet\\4Bet\\4Bet.Application\\4Bet.Application.csproj",
+  "projectFilePath": "C:\\Users\\PC\\Desktop\\Сoursework\\4Bet\\4Bet\\4Bet.Application\\4Bet.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\PC\\.nuget\\packages\\aspire.npgsql.entityframeworkcore.postgresql\\13.2.2\\aspire.npgsql.entityframeworkcore.postgresql.13.2.2.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\automapper\\16.1.1\\automapper.16.1.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\azure.ai.formrecognizer\\4.1.0\\azure.ai.formrecognizer.4.1.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\azure.core\\1.53.0\\azure.core.1.53.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\azure.storage.blobs\\12.29.0-beta.1\\azure.storage.blobs.12.29.0-beta.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\azure.storage.common\\12.28.0-beta.1\\azure.storage.common.12.28.0-beta.1.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\bcrypt.net-next\\4.1.0\\bcrypt.net-next.4.1.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\10.0.3\\microsoft.bcl.asyncinterfaces.10.0.3.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.15\\microsoft.entityframeworkcore.9.0.15.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.15\\microsoft.entityframeworkcore.abstractions.9.0.15.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.15\\microsoft.entityframeworkcore.analyzers.9.0.15.nupkg.sha512",
@@ -30,6 +35,8 @@
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.options\\10.0.5\\microsoft.extensions.options.10.0.5.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\9.0.0\\microsoft.extensions.options.configurationextensions.9.0.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.5\\microsoft.extensions.primitives.10.0.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.identity.client\\4.83.1\\microsoft.identity.client.4.83.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.identity.client.extensions.msal\\4.83.1\\microsoft.identity.client.extensions.msal.4.83.1.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.17.0\\microsoft.identitymodel.abstractions.8.17.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.17.0\\microsoft.identitymodel.jsonwebtokens.8.17.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\microsoft.identitymodel.logging\\8.17.0\\microsoft.identitymodel.logging.8.17.0.nupkg.sha512",
@@ -42,8 +49,16 @@
     "C:\\Users\\PC\\.nuget\\packages\\opentelemetry.api\\1.15.0\\opentelemetry.api.1.15.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\opentelemetry.api.providerbuilderextensions\\1.15.0\\opentelemetry.api.providerbuilderextensions.1.15.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\opentelemetry.extensions.hosting\\1.15.0\\opentelemetry.extensions.hosting.1.15.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.clientmodel\\1.10.0\\system.clientmodel.1.10.0.nupkg.sha512",
     "C:\\Users\\PC\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.5\\system.diagnostics.diagnosticsource.10.0.5.nupkg.sha512",
-    "C:\\Users\\PC\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.17.0\\system.identitymodel.tokens.jwt.8.17.0.nupkg.sha512"
+    "C:\\Users\\PC\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.17.0\\system.identitymodel.tokens.jwt.8.17.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.io.hashing\\10.0.3\\system.io.hashing.10.0.3.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.io.pipelines\\10.0.3\\system.io.pipelines.10.0.3.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.memory.data\\10.0.3\\system.memory.data.10.0.3.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.security.cryptography.protecteddata\\4.5.0\\system.security.cryptography.protecteddata.4.5.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.text.encodings.web\\10.0.3\\system.text.encodings.web.10.0.3.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.text.json\\10.0.3\\system.text.json.10.0.3.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.valuetuple\\4.5.0\\system.valuetuple.4.5.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("4BetWebApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+360d7ca084e66ea0eb83b062c99cca798aec0bc5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb4df676e5a9301eb84da64a6cd434aa7f8c1aba")]
 [assembly: System.Reflection.AssemblyProductAttribute("4BetWebApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("4BetWebApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

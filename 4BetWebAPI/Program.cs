@@ -19,6 +19,9 @@ builder.Services.AddDbContext<_4Bet.Infrastructure.Data.FourBetDbContext>(option
 builder.Services.AddAutoMapper(_ => { }, typeof(MappingProfile).Assembly);
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVerificationService, VerificationService>();
+builder.Services.AddScoped<IVerificationRepository, VerificationRepository>();
+builder.Services.AddScoped<IAdminVerificationService, AdminVerificationService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 builder.Services.AddSwaggerGen(c =>

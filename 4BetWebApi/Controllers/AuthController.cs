@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using _4Bet.Application.DTOs;
 using _4Bet.Application.IServices;
+using Microsoft.AspNetCore.Authorization;
 
 namespace _4BetWebApi.Controllers;
 
@@ -9,10 +11,11 @@ namespace _4BetWebApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-
-    public AuthController(IAuthService authService)
+    private readonly IVerificationService _verificationService;
+    public AuthController(IAuthService authService, IVerificationService verificationService)
     {
         _authService = authService;
+        _verificationService = verificationService;
     }
 
     [HttpPost("register")]
@@ -40,5 +43,41 @@ public class AuthController : ControllerBase
             // Якщо пароль невірний — повертаємо 401
             return Unauthorized(new { message = ex.Message });
         }
+    }
+    [Authorize]
+    [HttpPost("verify-id")]
+    public async Task<IActionResult> VerifyId(IFormFile file)
+    {
+        if (file == null) return BadRequest(new { message = "No file uploaded" });
+
+        // Assuming you get UserId from JWT Token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null) return Unauthorized();
+    
+        var userId = Guid.Parse(userIdClaim);
+
+        using var stream = file.OpenReadStream();
+        var result = await _verificationService.VerifyAgeAsync(stream, file.FileName, userId);
+
+        return result switch
+        {
+            "SUCCESS" => Ok(new { 
+                status = "Verified", 
+                message = "Identity and age verified successfully." 
+            }),
+            "TOO_YOUNG" => BadRequest(new { 
+                status = "Rejected", 
+                message = "Access denied. You must be at least 21 years old." 
+            }),
+            "PENDING_REVIEW" => Ok(new { 
+                status = "Pending", 
+                message = "Document quality is low. Verification is pending manual review by an administrator." 
+            }),
+            "DATA_NOT_FOUND" => BadRequest(new { 
+                status = "Error", 
+                message = "Could not extract birth date from the provided document. Please try again with a clearer photo." 
+            }),
+            _ => StatusCode(500, new { message = "An internal error occurred during verification." })
+        };
     }
 }
