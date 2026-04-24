@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("4Bet.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4a7986098ce2a479ef14b301df2db0e1d24104ab")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1060496cfcd6ab806725f0eb7396ecd88419dc80")]
 [assembly: System.Reflection.AssemblyProductAttribute("4Bet.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("4Bet.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

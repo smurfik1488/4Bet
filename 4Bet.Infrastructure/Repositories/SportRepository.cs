@@ -31,4 +31,27 @@ public class SportRepository(FourBetDbContext context) : ISportRepository
 
     public async Task<IEnumerable<SportEvent>> GetActiveEventsAsync() 
         => await context.Set<SportEvent>().Where(e => e.EventDate > DateTime.UtcNow).ToListAsync();
+    
+    public async Task<SportEvent?> GetByIdAsync(Guid id)
+    {
+        return await context.SportEvents.FindAsync(id);
+    }
+
+    public async Task AddAsync(SportEvent sportEvent)
+    {
+        await context.SportEvents.AddAsync(sportEvent);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(SportEvent sportEvent)
+    {
+        context.SportEvents.Update(sportEvent);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(SportEvent sportEvent)
+    {
+        context.SportEvents.Remove(sportEvent);
+        await context.SaveChangesAsync();
+    }
 }

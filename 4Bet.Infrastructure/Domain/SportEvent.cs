@@ -1,6 +1,5 @@
 // 4Bet.Infrastructure/Domain/SportEvent.cs
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace _4Bet.Infrastructure.Domain;
 

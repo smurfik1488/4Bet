@@ -25,4 +25,6 @@ public class User : BaseEntity
     public ICollection<VerificationRequest> VerificationRequests { get; set; }
     [Required]
     public UserRole Role { get; set; }
+    [Required]
+    public Wallet Wallet { get; set; } = null!;
 }
