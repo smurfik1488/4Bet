@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using _4Bet.Application.IServices;
 using _4Bet.Infrastructure.Data;
 using _4Bet.Infrastructure.Domain;
@@ -17,6 +18,9 @@ public class VerificationService : IVerificationService
     private readonly DocumentAnalysisClient _analysisClient;
     private readonly FourBetDbContext _context;
     private readonly IAuthRepository _authRepository;
+    private readonly IVerificationRepository _verificationRepository;
+    private readonly IEmailService _emailService;
+    private readonly IEmailVerificationRepository _emailVerificationRepository;
     
     // 1. Додаємо репозиторій запитів
     private readonly IVerificationRepository _verificationRequestRepository;
@@ -25,11 +29,14 @@ public class VerificationService : IVerificationService
         IConfiguration config, 
         FourBetDbContext context, 
         IAuthRepository authRepository,
-        IVerificationRepository verificationRequestRepository) // 2. Інжектимо в конструктор
+        IVerificationRepository verificationRequestRepository, IVerificationRepository verificationRepository, IEmailService emailService, IEmailVerificationRepository emailVerificationRepository) // 2. Інжектимо в конструктор
     {
         _context = context;
         _authRepository = authRepository;
         _verificationRequestRepository = verificationRequestRepository;
+        _verificationRepository = verificationRepository;
+        _emailService = emailService;
+        _emailVerificationRepository = emailVerificationRepository;
 
         // Налаштовуємо клієнта для Сховища
         var storageConn = config["Azure:Storage:ConnectionString"];
@@ -109,5 +116,73 @@ public class VerificationService : IVerificationService
         await _verificationRequestRepository.AddAsync(missingDataRequest);
 
         return "PENDING_REVIEW"; // Замінив "DATA_NOT_FOUND" на відправку адміну
+    }
+    
+    public async Task GenerateAndSendCodeAsync(User user)
+    {
+        // Generate a secure 6-digit code
+        var code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+
+        // Save it to the database (expires in 15 minutes)
+        var request = new EmailVerificationRequest
+        {
+            UserId = user.Id,
+            Code = code,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(5)
+        };
+        
+        await _emailVerificationRepository.AddAsync(request); // Assuming you have an Add method
+
+        // Send the email
+        var subject = "Your 4Bet Verification Code";
+        var body = $"<h2>Hello!</h2><p>Your verification code is: <strong>{code}</strong></p><p>This code expires in 15 minutes.</p>";
+
+        if (user.Email != null) await _emailService.SendEmailAsync(user.Email, subject, body);
+    }
+
+    // 2. RECEIVE, CHECK, AND VERIFY
+    public async Task<bool> VerifyCodeAsync(string email, string code)
+    {
+        // Find the user
+        var user = await _authRepository.GetByEmailAsync(email);
+        if (user == null) return false;
+
+        // Find their active verification code in the DB
+        var verificationRequest = await _emailVerificationRepository.GetLatestCodeForUserAsync(user.Id);
+        
+        if (verificationRequest == null) return false;
+
+        // Check if code matches AND is not expired
+        if (verificationRequest.Code == code && verificationRequest.ExpiresAt > DateTime.UtcNow)
+        {
+            // Success! Mark user as verified
+            user.IsEmailVerified = true;
+            await _authRepository.UpdateAsync(user); 
+
+            // Optional: Delete the code from DB so it can't be used again
+            await _emailVerificationRepository.DeleteAsync(verificationRequest);
+            await _emailVerificationRepository.InvalidateOldCodesAsync(user.Id);
+
+            return true;
+        }
+
+        return false; // Code was wrong or expired
+    }
+    public async Task ResendCodeAsync(string email)
+    {
+        // 1. Find the user
+        var user = await _authRepository.GetByEmailAsync(email);
+    
+        // If user doesn't exist or is already verified, do nothing (for security/spam prevention)
+        if (user == null || user.IsEmailVerified) 
+        {
+            return; 
+        }
+
+        // 2. Delete any old codes so they don't get confused
+        await _emailVerificationRepository.InvalidateOldCodesAsync(user.Id);
+
+        // 3. Reuse our existing method to generate, save, and email the new code!
+        await GenerateAndSendCodeAsync(user);
     }
 }

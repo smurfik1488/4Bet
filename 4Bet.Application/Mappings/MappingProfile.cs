@@ -8,5 +8,6 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<UserRegistrationDto,User>().ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src=>BCrypt.Net.BCrypt.HashPassword(src.Password)));
+        CreateMap<SportEvent, SportEventDto>();
     }
 }

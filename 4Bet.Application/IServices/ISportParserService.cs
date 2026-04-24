@@ -4,5 +4,5 @@ namespace _4Bet.Application.IServices;
 
 public interface ISportParserService
 {
-    public Task<List<OddsApiResponse>?> GetFootballOddsAsync(CancellationToken cancellationToken = default);
+    public Task<List<OddsApiResponse>?> GetFootballOddsAsync(string sportKey, CancellationToken cancellationToken = default);
 }

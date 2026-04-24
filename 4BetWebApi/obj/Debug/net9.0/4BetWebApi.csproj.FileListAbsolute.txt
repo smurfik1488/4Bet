@@ -341,3 +341,6 @@ C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\obj\Debug\net9.0\refint\4Be
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\obj\Debug\net9.0\4BetWebApi.pdb
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\obj\Debug\net9.0\4BetWebApi.genruntimeconfig.cache
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\obj\Debug\net9.0\ref\4BetWebApi.dll
+C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\MailKit.dll
+C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\MimeKit.dll

@@ -9,6 +9,8 @@ public class FourBetDbContext : DbContext {
     public DbSet<VerificationRequest> VerificationRequests { get; set; }
     
     public DbSet<SportEvent> SportEvents { get; set; }
+    
+    public DbSet<EmailVerificationRequest> EmailVerificationRequests { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

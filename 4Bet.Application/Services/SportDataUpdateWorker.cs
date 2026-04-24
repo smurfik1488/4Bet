@@ -13,54 +13,68 @@ public class SportDataUpdateWorker(
     IServiceProvider serviceProvider,
     ILogger<SportDataUpdateWorker> logger) : BackgroundService
 {
-    private readonly TimeSpan _updateInterval = TimeSpan.FromMinutes(90);
+    // Increased to 6 hours to stay within the 500 requests/month free limit (4 leagues * 4 times a day * 30 days = 480 requests)
+    private readonly TimeSpan _updateInterval = TimeSpan.FromHours(6);
+
+    // List of leagues to parse
+    private readonly string[] _targetLeagues = 
+    {
+        "soccer_epl",                  // English Premier League
+        "soccer_spain_la_liga",        // Spanish La Liga
+        "soccer_uefa_champs_league",   // Champions League
+        "soccer_uefa_europa_conference_league" // Ukrainian Premier League
+    };
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Воркер оновлення спортивних даних запущено.");
+        logger.LogInformation("Sports Data Update Worker started.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                // Оскільки BackgroundService є Singleton, ми створюємо Scope, 
-                // щоб дістати Scoped та Transient сервіси (репозиторій та парсер)
                 using var scope = serviceProvider.CreateScope();
-                
-                // Використовуємо ІНТЕРФЕЙСИ
                 var parser = scope.ServiceProvider.GetRequiredService<ISportParserService>();
                 var repo = scope.ServiceProvider.GetRequiredService<ISportRepository>();
 
-                logger.LogInformation("Початок синхронізації з The Odds API...");
-                
-                var apiData = await parser.GetFootballOddsAsync(stoppingToken);
-                
-                if (apiData != null && apiData.Any())
-                {
-                    var validEvents = apiData
-                        .Where(dto => dto.CommenceTime > DateTime.UtcNow) // Тільки майбутні події
-                        .Select(MapToDomain)
-                        .Where(ev => ev != null)
-                        .Cast<SportEvent>()
-                        .ToList();
+                logger.LogInformation("Starting synchronization with The Odds API...");
 
-                    if (validEvents.Any())
-                    {
-                        await repo.UpsertEventsAsync(validEvents);
-                        logger.LogInformation("Успішно оновлено {Count} спортивних подій.", validEvents.Count);
-                    }
-                }
-                else
+                foreach (var league in _targetLeagues)
                 {
-                    logger.LogWarning("API повернуло порожній результат або сталася помилка.");
+                    logger.LogInformation("Fetching odds for: {League}", league);
+                    
+                    var apiData = await parser.GetFootballOddsAsync(league, stoppingToken);
+                    
+                    if (apiData != null && apiData.Any())
+                    {
+                        var validEvents = apiData
+                            .Where(dto => dto.CommenceTime > DateTime.UtcNow)
+                            .Select(MapToDomain)
+                            .Where(ev => ev != null)
+                            .Cast<SportEvent>()
+                            .ToList();
+
+                        if (validEvents.Any())
+                        {
+                            await repo.UpsertEventsAsync(validEvents);
+                            logger.LogInformation("Successfully updated {Count} events for {League}.", validEvents.Count, league);
+                        }
+                    }
+                    else
+                    {
+                        logger.LogWarning("API returned empty result for {League}. It might be out of season or the key is incorrect.", league);
+                    }
+                    
+                    // Add a small delay between requests to avoid hitting rate limit spikes
+                    await Task.Delay(2000, stoppingToken); 
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Критична помилка всередині циклу воркера.");
+                logger.LogError(ex, "Critical error inside the worker loop.");
             }
 
-            // Засинаємо до наступного циклу
+            logger.LogInformation("Worker sleeping for {Hours} hours...", _updateInterval.TotalHours);
             await Task.Delay(_updateInterval, stoppingToken);
         }
     }
@@ -89,7 +103,7 @@ public class SportDataUpdateWorker(
         }
         catch
         {
-            return null; // Відкидаємо биті дані
+            return null;
         }
     }
 }

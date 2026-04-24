@@ -20,7 +20,8 @@ public class User : BaseEntity
     public DateTime Birthday { get; set; }
     [Required]
     public bool IsBdVerified { get; set; } = false;
-    
+    [Required]
+    public bool IsEmailVerified { get; set; } = false;
     public ICollection<VerificationRequest> VerificationRequests { get; set; }
     [Required]
     public UserRole Role { get; set; }

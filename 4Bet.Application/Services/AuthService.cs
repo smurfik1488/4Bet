@@ -15,13 +15,16 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
     private readonly FourBetDbContext _context;
+    private readonly IVerificationService _verificationService;
     
-    public AuthService(IAuthRepository authRepository, ITokenService tokenService, IMapper mapper, FourBetDbContext context)
+    public AuthService(IAuthRepository authRepository, ITokenService tokenService, IMapper mapper, FourBetDbContext context, IVerificationService verificationService)
     {
         _authRepository = authRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _context = context;
+        _verificationService = verificationService;
+   
     }
 
     public async Task<string> LoginAsync(UserLoginDto dto)
@@ -41,10 +44,6 @@ public class AuthService : IAuthService
         {
             throw new Exception("User with this email already exists");
         }
-
-        // 2. Хешуємо пароль
-        // var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-
         // 3. Створюємо сутність
         var user = _mapper.Map<User>(dto);
 
@@ -52,6 +51,7 @@ public class AuthService : IAuthService
         await _authRepository.AddAsync(user);
         
         await _context.SaveChangesAsync();
+        await _verificationService.GenerateAndSendCodeAsync(user);
 
         // 6. Повертаємо токен
         return _tokenService.CreateToken(user);

@@ -29,6 +29,34 @@ public class AuthController : ControllerBase
             Token = token 
         });
     }
+    
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        // 1. Pass the user's email and the code they typed to the VerificationService
+        var isVerified = await _verificationService.VerifyCodeAsync(dto.Email, dto.Code);
+
+        // 2. Return the appropriate HTTP response to React
+        if (isVerified)
+        {
+            return Ok(new { message = "Email verified successfully! You can now log in." });
+        }
+
+        return BadRequest(new { message = "Invalid or expired verification code." });
+    }
+    [HttpPost("resend-code")]
+    public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        // We call the service. Notice we always return OK even if the email doesn't exist.
+        // This is a standard security practice so hackers can't use this endpoint to guess registered emails.
+        await _verificationService.ResendCodeAsync(dto.Email);
+
+        return Ok(new { message = "If an unverified account with that email exists, a new code has been sent." });
+    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
