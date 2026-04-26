@@ -99,7 +99,8 @@ public class AuthService : IAuthService
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName ?? string.Empty,
             LastName = user.LastName ?? string.Empty,
-            AvatarDataUrl = user.AvatarDataUrl
+            AvatarDataUrl = user.AvatarDataUrl,
+            IsBdVerified = user.IsBdVerified
         };
     }
 
@@ -122,7 +123,8 @@ public class AuthService : IAuthService
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName ?? string.Empty,
             LastName = user.LastName ?? string.Empty,
-            AvatarDataUrl = user.AvatarDataUrl
+            AvatarDataUrl = user.AvatarDataUrl,
+            IsBdVerified = user.IsBdVerified
         };
     }
 
@@ -163,7 +165,23 @@ public class AuthService : IAuthService
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName ?? string.Empty,
             LastName = user.LastName ?? string.Empty,
-            AvatarDataUrl = user.AvatarDataUrl
+            AvatarDataUrl = user.AvatarDataUrl,
+            IsBdVerified = user.IsBdVerified
         };
+    }
+
+    public async Task<bool> SkipDocumentVerificationAsync(Guid userId)
+    {
+        var user = await _authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return false;
+        }
+
+        user.IsBdVerified = true;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _authRepository.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

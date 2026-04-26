@@ -11,4 +11,5 @@ public interface IAuthService
     Task<UserProfileDto?> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
     Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
     Task<UserProfileDto?> UpdateAvatarAsync(Guid userId, UpdateAvatarDto dto);
+    Task<bool> SkipDocumentVerificationAsync(Guid userId);
 }

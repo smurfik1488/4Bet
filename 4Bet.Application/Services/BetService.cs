@@ -12,10 +12,22 @@ public class BetService(
     IWalletRepository walletRepository,
     ISportRepository sportRepository,
     ISportNotificationService notificationService,
+    IAuthRepository authRepository,
     FourBetDbContext dbContext) : IBetService
 {
     public async Task<BetDto> PlaceBetAsync(Guid userId, PlaceBetRequestDto request, CancellationToken cancellationToken = default)
     {
+        var user = await authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (!user.IsBdVerified)
+        {
+            throw new InvalidOperationException("Please verify your documents before placing bets.");
+        }
+
         if (request.Legs.Count == 0)
         {
             throw new InvalidOperationException("Bet must contain at least one leg.");

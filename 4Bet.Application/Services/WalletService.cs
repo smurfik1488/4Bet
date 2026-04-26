@@ -6,7 +6,7 @@ using _4Bet.Infrastructure.IRepositories;
 
 namespace _4Bet.Application.Services;
 
-public class WalletService(IWalletRepository walletRepository, FourBetDbContext dbContext) : IWalletService
+public class WalletService(IWalletRepository walletRepository, IAuthRepository authRepository, FourBetDbContext dbContext) : IWalletService
 {
     public async Task<WalletBalanceDto?> GetBalanceAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -16,6 +16,17 @@ public class WalletService(IWalletRepository walletRepository, FourBetDbContext 
 
     public async Task<WalletBalanceDto?> TopUpAsync(Guid userId, decimal amount, CancellationToken cancellationToken = default)
     {
+        var user = await authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return null;
+        }
+
+        if (!user.IsBdVerified)
+        {
+            throw new InvalidOperationException("Please verify your documents before depositing funds.");
+        }
+
         if (amount <= 0)
         {
             throw new InvalidOperationException("Top-up amount must be greater than zero.");
@@ -48,6 +59,17 @@ public class WalletService(IWalletRepository walletRepository, FourBetDbContext 
 
     public async Task<WalletBalanceDto?> WithdrawAsync(Guid userId, decimal amount, CancellationToken cancellationToken = default)
     {
+        var user = await authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return null;
+        }
+
+        if (!user.IsBdVerified)
+        {
+            throw new InvalidOperationException("Please verify your documents before withdrawing funds.");
+        }
+
         if (amount <= 0)
         {
             throw new InvalidOperationException("Withdraw amount must be greater than zero.");

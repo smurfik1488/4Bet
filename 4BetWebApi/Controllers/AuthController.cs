@@ -134,6 +134,24 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpPost("skip-document-verification")]
+    public async Task<IActionResult> SkipDocumentVerification()
+    {
+        var userId = GetUserId();
+        var updated = await _authService.SkipDocumentVerificationAsync(userId);
+        if (!updated)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        return Ok(new
+        {
+            status = "Verified",
+            message = "Document verification has been skipped temporarily."
+        });
+    }
+
+    [Authorize]
     [HttpGet("profile")]
     public async Task<ActionResult<UserProfileDto>> GetProfile()
     {

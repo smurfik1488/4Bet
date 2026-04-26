@@ -6,4 +6,5 @@ public class UserProfileDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? AvatarDataUrl { get; set; }
+    public bool IsBdVerified { get; set; }
 }

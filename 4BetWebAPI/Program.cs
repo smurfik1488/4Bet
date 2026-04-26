@@ -17,16 +17,27 @@ using _4BetWebApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
 // 2. ДОДАНО: Налаштування CORS (Обов'язково для WebSockets/SignalR)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendCorsPolicy", policy =>
     {
-        // ВАЖЛИВО: Заміни посилання на те, де запущений твій React/Angular/Vue
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173") 
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); 
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+            return;
+        }
+
+        // Safe fallback for local development if no config provided.
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
