@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _4Bet.Infrastructure.Data;
@@ -11,9 +12,11 @@ using _4Bet.Infrastructure.Data;
 namespace _4Bet.Infrastructure.Migrations
 {
     [DbContext(typeof(FourBetDbContext))]
-    partial class FourBetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260426021432_AddUserAvatarDataUrl")]
+    partial class AddUserAvatarDataUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("4Bet.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4e83d2a14887d2f750063832b5b43edded6a52f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0217e68fa35bdb2380607794122e705df82c350a")]
 [assembly: System.Reflection.AssemblyProductAttribute("4Bet.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("4Bet.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

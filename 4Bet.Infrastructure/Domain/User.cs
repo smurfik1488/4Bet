@@ -28,4 +28,5 @@ public class User : BaseEntity
     [Required]
     public Wallet Wallet { get; set; } = null!;
     public ICollection<Bet> Bets { get; set; } = new List<Bet>();
+    public string? AvatarDataUrl { get; set; }
 }

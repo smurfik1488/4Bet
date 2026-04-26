@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using _4Bet.Application.DTOs;
@@ -130,5 +131,64 @@ public class AuthController : ControllerBase
             }),
             _ => StatusCode(500, new { message = "An internal error occurred during verification." })
         };
+    }
+
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
+    {
+        var userId = GetUserId();
+        var profile = await _authService.GetProfileAsync(userId);
+        return profile is null ? NotFound() : Ok(profile);
+    }
+
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var userId = GetUserId();
+        var profile = await _authService.UpdateProfileAsync(userId, dto);
+        return profile is null ? NotFound() : Ok(profile);
+    }
+
+    [Authorize]
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var userId = GetUserId();
+            await _authService.ChangePasswordAsync(userId, dto);
+            return Ok(new { message = "Password updated successfully." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [Authorize]
+    [HttpPut("avatar")]
+    public async Task<ActionResult<UserProfileDto>> UpdateAvatar([FromBody] UpdateAvatarDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var userId = GetUserId();
+        var profile = await _authService.UpdateAvatarAsync(userId, dto);
+        return profile is null ? NotFound() : Ok(profile);
+    }
+
+    private Guid GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue(JwtRegisteredClaimNames.NameId)
+                    ?? User.FindFirstValue("nameid");
+        return Guid.TryParse(claim, out var userId)
+            ? userId
+            : throw new UnauthorizedAccessException("Invalid token user id.");
     }
 }

@@ -85,4 +85,85 @@ public class AuthService : IAuthService
         await _emailVerificationRepository.InvalidateOldCodesAsync(user.Id);
         return await _authRepository.RemovePendingByEmailAsync(normalizedEmail);
     }
+
+    public async Task<UserProfileDto?> GetProfileAsync(Guid userId)
+    {
+        var user = await _authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return null;
+        }
+
+        return new UserProfileDto
+        {
+            Email = user.Email ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            AvatarDataUrl = user.AvatarDataUrl
+        };
+    }
+
+    public async Task<UserProfileDto?> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+    {
+        var user = await _authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return null;
+        }
+
+        user.FirstName = dto.FirstName.Trim();
+        user.LastName = dto.LastName.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
+        await _authRepository.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+
+        return new UserProfileDto
+        {
+            Email = user.Email ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            AvatarDataUrl = user.AvatarDataUrl
+        };
+    }
+
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    {
+        var user = await _authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+        {
+            throw new InvalidOperationException("Current password is invalid.");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        user.UpdatedAt = DateTime.UtcNow;
+        await _authRepository.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<UserProfileDto?> UpdateAvatarAsync(Guid userId, UpdateAvatarDto dto)
+    {
+        var user = await _authRepository.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted)
+        {
+            return null;
+        }
+
+        user.AvatarDataUrl = dto.AvatarDataUrl.Trim();
+        user.UpdatedAt = DateTime.UtcNow;
+        await _authRepository.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+
+        return new UserProfileDto
+        {
+            Email = user.Email ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            AvatarDataUrl = user.AvatarDataUrl
+        };
+    }
 }

@@ -7,4 +7,8 @@ public interface IAuthService
 
     public Task<string> RegisterAsync(UserRegistrationDto dto);
     public Task<bool> CancelPendingRegistrationAsync(string email);
+    Task<UserProfileDto?> GetProfileAsync(Guid userId);
+    Task<UserProfileDto?> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
+    Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto);
+    Task<UserProfileDto?> UpdateAvatarAsync(Guid userId, UpdateAvatarDto dto);
 }
