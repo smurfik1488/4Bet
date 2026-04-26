@@ -25,11 +25,14 @@ public class TokenService : ITokenService
         // 1. Створюємо Claims (корисне навантаження токена)
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
+            new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName ?? string.Empty),
             // Кастомний claim для віку
             new Claim("is_verified", user.IsBdVerified.ToString().ToLower()),
+            new Claim("email_verified", user.IsEmailVerified.ToString().ToLower()),
             new Claim(ClaimTypes.Role, user.Role.ToString())
         };
 

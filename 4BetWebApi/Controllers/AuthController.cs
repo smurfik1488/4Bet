@@ -21,13 +21,19 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationDto registerDto)
     {
-        // Метод поверне токен після успішної реєстрації
-        var token = await _authService.RegisterAsync(registerDto);
-        
-        return Ok(new { 
-            Message = "Register success", 
-            Token = token 
-        });
+        try
+        {
+            var token = await _authService.RegisterAsync(registerDto);
+            return Ok(new
+            {
+                Message = "Register success",
+                Token = token
+            });
+        }
+        catch (Exception ex) when (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
     
     [HttpPost("verify-email")]
@@ -56,6 +62,23 @@ public class AuthController : ControllerBase
         await _verificationService.ResendCodeAsync(dto.Email);
 
         return Ok(new { message = "If an unverified account with that email exists, a new code has been sent." });
+    }
+    
+    [HttpPost("cancel-registration")]
+    public async Task<IActionResult> CancelRegistration([FromBody] ResendCodeDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email))
+        {
+            return BadRequest(new { message = "Email is required." });
+        }
+
+        var removed = await _authService.CancelPendingRegistrationAsync(dto.Email);
+        if (!removed)
+        {
+            return Ok(new { message = "No pending registration found for this email." });
+        }
+
+        return Ok(new { message = "Pending registration deleted." });
     }
 
     [HttpPost("login")]

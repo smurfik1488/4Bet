@@ -12,4 +12,5 @@ public interface IAuthRepository
     public Task<bool> ExistsAsync(string email);
 
     public Task UpdateAsync(User user);
+    public Task<bool> RemovePendingByEmailAsync(string email);
 }

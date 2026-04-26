@@ -12,4 +12,5 @@ public class ManageSportEventDto
     [Range(1.0, 1000.0)] public double HomeWinOdds { get; set; }
     [Range(1.0, 1000.0)] public double DrawOdds { get; set; }
     [Range(1.0, 1000.0)] public double AwayWinOdds { get; set; }
+
 }

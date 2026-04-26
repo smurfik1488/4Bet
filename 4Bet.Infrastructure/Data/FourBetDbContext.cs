@@ -13,6 +13,9 @@ public class FourBetDbContext : DbContext {
     public DbSet<EmailVerificationRequest> EmailVerificationRequests { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<Bet> Bets { get; set; }
+    public DbSet<BetLeg> BetLegs { get; set; }
+    public DbSet<TeamIdentity> TeamIdentities { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -30,7 +33,34 @@ public class FourBetDbContext : DbContext {
             .WithOne(w => w.User)
             .HasForeignKey<Wallet>(w => w.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-    
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Bets)
+            .WithOne(b => b.User)
+            .HasForeignKey(b => b.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Bet>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<BetLeg>(entity =>
+        {
+            entity.HasIndex(e => new { e.BetId, e.SportEventId }).IsUnique();
+            entity.HasIndex(e => e.SportEventId);
+            entity.HasOne(e => e.SportEvent)
+                .WithMany(s => s.BetLegs)
+                .HasForeignKey(e => e.SportEventId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TeamIdentity>(entity =>
+        {
+            entity.HasIndex(e => new { e.Provider, e.ProviderTeamId }).IsUnique();
+            entity.HasIndex(e => e.TeamNameNormalized);
+        });
     }
     
 }

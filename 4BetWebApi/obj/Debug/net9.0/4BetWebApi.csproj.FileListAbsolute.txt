@@ -344,3 +344,5 @@ C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\obj\Debug\net9.0\ref\4BetWe
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\MailKit.dll
 C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\MimeKit.dll
+C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\PC\Desktop\Сoursework\4Bet\4Bet\4BetWebApi\bin\Debug\net9.0\System.Net.WebSockets.WebSocketProtocol.dll

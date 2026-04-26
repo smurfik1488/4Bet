@@ -6,7 +6,16 @@ public interface ISportRepository
 {
     Task UpsertEventsAsync(IEnumerable<SportEvent> events);
     Task<IEnumerable<SportEvent>> GetActiveEventsAsync();
-    Task<SportEvent?> GetByIdAsync(Guid id); // Assuming BaseEntity uses Guid
+    
+    // ДОДАНО: Метод для отримання всіх матчів
+    Task<IEnumerable<SportEvent>> GetAllEventsAsync(); 
+    Task<SportEvent?> GetByExternalIdAsync(string externalId);
+    Task<IEnumerable<SportEvent>> GetByExternalIdsAsync(IEnumerable<string> externalIds);
+    
+    Task<SportEvent?> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<string>> GetFinishedEventExternalIdsAsync();
+    Task UpsertTeamIdentitiesAsync(IEnumerable<TeamIdentity> teamIdentities);
+    Task<IReadOnlyList<TeamIdentity>> GetTeamIdentitiesByNormalizedNamesAsync(IEnumerable<string> normalizedNames);
     Task AddAsync(SportEvent sportEvent);
     Task UpdateAsync(SportEvent sportEvent);
     Task DeleteAsync(SportEvent sportEvent);

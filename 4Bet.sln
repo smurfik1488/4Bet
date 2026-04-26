@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "4Bet.Infrastructure", "4Bet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "4Bet.Application", "4Bet.Application\4Bet.Application.csproj", "{AA418F22-09CE-4D8B-921E-C1F031D78D5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "4Bet.Application.Tests", "4Bet.Application.Tests\4Bet.Application.Tests.csproj", "{BB4B39E3-AFE9-404E-9986-053922030183}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{AA418F22-09CE-4D8B-921E-C1F031D78D5E}.Release|x64.Build.0 = Release|Any CPU
 		{AA418F22-09CE-4D8B-921E-C1F031D78D5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{AA418F22-09CE-4D8B-921E-C1F031D78D5E}.Release|x86.Build.0 = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|x64.Build.0 = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Debug|x86.Build.0 = Debug|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|x64.ActiveCfg = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|x64.Build.0 = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|x86.ActiveCfg = Release|Any CPU
+		{BB4B39E3-AFE9-404E-9986-053922030183}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

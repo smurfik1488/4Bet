@@ -22,6 +22,88 @@ namespace _4Bet.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Bet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("CombinedOdds")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("PotentialPayout")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("SettledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("SettledPayout")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Stake")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId", "Status");
+
+                    b.ToTable("Bets");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.BetLeg", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("LockedOdds")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Selection")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SportEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SportEventId");
+
+                    b.HasIndex("BetId", "SportEventId")
+                        .IsUnique();
+
+                    b.ToTable("BetLegs");
+                });
+
             modelBuilder.Entity("_4Bet.Infrastructure.Domain.EmailVerificationRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -60,10 +142,12 @@ namespace _4Bet.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("AwayScore")
+                        .HasColumnType("integer");
+
                     b.Property<string>("AwayTeam")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<double>("AwayWinOdds")
                         .HasColumnType("double precision");
@@ -79,13 +163,14 @@ namespace _4Bet.Infrastructure.Migrations
 
                     b.Property<string>("ExternalId")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
+
+                    b.Property<int?>("HomeScore")
+                        .HasColumnType("integer");
 
                     b.Property<string>("HomeTeam")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("text");
 
                     b.Property<double>("HomeWinOdds")
                         .HasColumnType("double precision");
@@ -96,10 +181,16 @@ namespace _4Bet.Infrastructure.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("MatchMinute")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MatchStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("SportKey")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -110,6 +201,90 @@ namespace _4Bet.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("SportEvents");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.TeamIdentity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProviderTeamId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TeamName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TeamNameNormalized")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamNameNormalized");
+
+                    b.HasIndex("Provider", "ProviderTeamId")
+                        .IsUnique();
+
+                    b.ToTable("TeamIdentities");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("_4Bet.Infrastructure.Domain.User", b =>
@@ -193,6 +368,68 @@ namespace _4Bet.Infrastructure.Migrations
                     b.ToTable("VerificationRequests");
                 });
 
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Wallet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Bet", b =>
+                {
+                    b.HasOne("_4Bet.Infrastructure.Domain.User", "User")
+                        .WithMany("Bets")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.BetLeg", b =>
+                {
+                    b.HasOne("_4Bet.Infrastructure.Domain.Bet", "Bet")
+                        .WithMany("Legs")
+                        .HasForeignKey("BetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("_4Bet.Infrastructure.Domain.SportEvent", "SportEvent")
+                        .WithMany("BetLegs")
+                        .HasForeignKey("SportEventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bet");
+
+                    b.Navigation("SportEvent");
+                });
+
             modelBuilder.Entity("_4Bet.Infrastructure.Domain.EmailVerificationRequest", b =>
                 {
                     b.HasOne("_4Bet.Infrastructure.Domain.User", "User")
@@ -202,6 +439,17 @@ namespace _4Bet.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Transaction", b =>
+                {
+                    b.HasOne("_4Bet.Infrastructure.Domain.Wallet", "Wallet")
+                        .WithMany("Transactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
                 });
 
             modelBuilder.Entity("_4Bet.Infrastructure.Domain.VerificationRequest", b =>
@@ -215,9 +463,40 @@ namespace _4Bet.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Wallet", b =>
+                {
+                    b.HasOne("_4Bet.Infrastructure.Domain.User", "User")
+                        .WithOne("Wallet")
+                        .HasForeignKey("_4Bet.Infrastructure.Domain.Wallet", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Bet", b =>
+                {
+                    b.Navigation("Legs");
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.SportEvent", b =>
+                {
+                    b.Navigation("BetLegs");
+                });
+
             modelBuilder.Entity("_4Bet.Infrastructure.Domain.User", b =>
                 {
+                    b.Navigation("Bets");
+
                     b.Navigation("VerificationRequests");
+
+                    b.Navigation("Wallet")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("_4Bet.Infrastructure.Domain.Wallet", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

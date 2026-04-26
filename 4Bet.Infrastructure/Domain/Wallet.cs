@@ -1,7 +1,7 @@
 namespace _4Bet.Infrastructure.Domain;
 using System.ComponentModel.DataAnnotations;
 
-public class Wallet
+public class Wallet : BaseEntity
 {
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

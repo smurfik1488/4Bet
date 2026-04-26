@@ -47,8 +47,10 @@ public class SportDataUpdateWorker(
                     
                     if (apiData != null && apiData.Any())
                     {
+                        // Keep recently started fixtures too, otherwise live matches disappear from DB
+                        // before live-status synchronization catches up.
                         var validEvents = apiData
-                            .Where(dto => dto.CommenceTime > DateTime.UtcNow)
+                            .Where(dto => dto.CommenceTime >= DateTime.UtcNow.AddHours(-4))
                             .Select(MapToDomain)
                             .Where(ev => ev != null)
                             .Cast<SportEvent>()

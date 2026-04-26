@@ -22,9 +22,10 @@ public class User : BaseEntity
     public bool IsBdVerified { get; set; } = false;
     [Required]
     public bool IsEmailVerified { get; set; } = false;
-    public ICollection<VerificationRequest> VerificationRequests { get; set; }
+    public ICollection<VerificationRequest> VerificationRequests { get; set; } = new List<VerificationRequest>();
     [Required]
     public UserRole Role { get; set; }
     [Required]
     public Wallet Wallet { get; set; } = null!;
+    public ICollection<Bet> Bets { get; set; } = new List<Bet>();
 }

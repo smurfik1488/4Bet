@@ -16,14 +16,22 @@ public class AuthService : IAuthService
     private readonly IMapper _mapper;
     private readonly FourBetDbContext _context;
     private readonly IVerificationService _verificationService;
+    private readonly IEmailVerificationRepository _emailVerificationRepository;
     
-    public AuthService(IAuthRepository authRepository, ITokenService tokenService, IMapper mapper, FourBetDbContext context, IVerificationService verificationService)
+    public AuthService(
+        IAuthRepository authRepository,
+        ITokenService tokenService,
+        IMapper mapper,
+        FourBetDbContext context,
+        IVerificationService verificationService,
+        IEmailVerificationRepository emailVerificationRepository)
     {
         _authRepository = authRepository;
         _tokenService = tokenService;
         _mapper = mapper;
         _context = context;
         _verificationService = verificationService;
+        _emailVerificationRepository = emailVerificationRepository;
    
     }
 
@@ -34,6 +42,9 @@ public class AuthService : IAuthService
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("Invalid credentials");
+
+        if (!user.IsEmailVerified)
+            throw new UnauthorizedAccessException("Email is not verified. Please confirm your code first.");
 
         return _tokenService.CreateToken(user);
     }
@@ -55,5 +66,23 @@ public class AuthService : IAuthService
 
         // 6. Повертаємо токен
         return _tokenService.CreateToken(user);
+    }
+
+    public async Task<bool> CancelPendingRegistrationAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return false;
+        }
+
+        var normalizedEmail = email.Trim();
+        var user = await _authRepository.GetByEmailAsync(normalizedEmail);
+        if (user == null || user.IsEmailVerified)
+        {
+            return false;
+        }
+
+        await _emailVerificationRepository.InvalidateOldCodesAsync(user.Id);
+        return await _authRepository.RemovePendingByEmailAsync(normalizedEmail);
     }
 }

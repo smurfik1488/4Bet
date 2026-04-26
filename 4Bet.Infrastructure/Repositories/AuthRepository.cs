@@ -39,4 +39,19 @@ public class AuthRepository : IAuthRepository
         _context.Users.Update(user);
         await Task.CompletedTask; 
     }
+
+    public async Task<bool> RemovePendingByEmailAsync(string email)
+    {
+        var normalizedEmail = email.Trim();
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail && !u.IsDeleted);
+        if (user == null || user.IsEmailVerified)
+        {
+            return false;
+        }
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

@@ -12,14 +12,25 @@ public class SportParserService(
     IConfiguration configuration, 
     ILogger<SportParserService> logger) : ISportParserService
 {
+    private string? GetApiKey()
+    {
+        var apiKey = configuration["ExternalAPIs:TheOddsApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            logger.LogError("API key for The Odds API not found in appsettings.json.");
+            return null;
+        }
+
+        return apiKey;
+    }
+
     public async Task<List<OddsApiResponse>?> GetFootballOddsAsync(string sportKey, CancellationToken cancellationToken = default)
     {
         try
         {
-            var apiKey = configuration["ExternalAPIs:TheOddsApiKey"];
+            var apiKey = GetApiKey();
             if (string.IsNullOrEmpty(apiKey))
             {
-                logger.LogError("API key for The Odds API not found in appsettings.json.");
                 return null;
             }
 
@@ -36,6 +47,32 @@ public class SportParserService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error parsing data for sport: {SportKey}", sportKey);
+            return null;
+        }
+    }
+
+    public async Task<List<OddsScoreResponse>?> GetFootballScoresAsync(string sportKey, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var apiKey = GetApiKey();
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return null;
+            }
+
+            // daysFrom=1 includes games from yesterday/today for a lightweight live-ish score fallback.
+            var url = $"v4/sports/{sportKey}/scores/?apiKey={apiKey}&daysFrom=1";
+            return await httpClient.GetFromJsonAsync<List<OddsScoreResponse>>(url, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Network error when requesting score feed from The Odds API for sport: {SportKey}", sportKey);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Unexpected error parsing score feed for sport: {SportKey}", sportKey);
             return null;
         }
     }

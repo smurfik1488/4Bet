@@ -5,33 +5,20 @@ namespace _4Bet.Infrastructure.Domain;
 
 public class SportEvent : BaseEntity
 {
-    [Required]
-    [MaxLength(100)]
     public string ExternalId { get; set; } = string.Empty;
-
-    [Required]
-    [MaxLength(200)]
     public string HomeTeam { get; set; } = string.Empty;
-
-    [Required]
-    [MaxLength(200)]
     public string AwayTeam { get; set; } = string.Empty;
-
-    [Required]
     public DateTime EventDate { get; set; }
-
-    [Required]
-    [MaxLength(50)]
     public string SportKey { get; set; } = string.Empty;
-
-    [Range(1.0, 1000.0)]
     public double HomeWinOdds { get; set; }
-
-    [Range(1.0, 1000.0)]
     public double DrawOdds { get; set; }
-
-    [Range(1.0, 1000.0)]
     public double AwayWinOdds { get; set; }
+    public DateTime LastUpdated { get; set; }
 
-    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    // --- НОВІ ПОЛЯ ДЛЯ ЛАЙВ-МАТЧІВ ---
+    public int? HomeScore { get; set; } 
+    public int? AwayScore { get; set; }
+    public string MatchStatus { get; set; } = "Not Started"; // Наприклад: NS, 1H, HT, 2H, FT
+    public int? MatchMinute { get; set; }
+    public ICollection<BetLeg> BetLegs { get; set; } = new List<BetLeg>();
 }
