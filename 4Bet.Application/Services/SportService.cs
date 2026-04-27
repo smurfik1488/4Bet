@@ -166,7 +166,7 @@ public class SportService(
     {
         var newEvent = new SportEvent
         {
-            ExternalId = dto.ExternalId,
+            ExternalId = string.IsNullOrWhiteSpace(dto.ExternalId) ? GenerateManualExternalId() : dto.ExternalId.Trim(),
             HomeTeam = dto.HomeTeam,
             AwayTeam = dto.AwayTeam,
             EventDate = dto.EventDate,
@@ -190,7 +190,10 @@ public class SportService(
         var existingEvent = await sportRepository.GetByIdAsync(id) 
                             ?? throw new KeyNotFoundException("Event not found.");
 
-        existingEvent.ExternalId = dto.ExternalId;
+        if (!string.IsNullOrWhiteSpace(dto.ExternalId))
+        {
+            existingEvent.ExternalId = dto.ExternalId.Trim();
+        }
         existingEvent.HomeTeam = dto.HomeTeam;
         existingEvent.AwayTeam = dto.AwayTeam;
         existingEvent.EventDate = dto.EventDate;
@@ -213,6 +216,11 @@ public class SportService(
                             ?? throw new KeyNotFoundException("Event not found.");
 
         await sportRepository.DeleteAsync(existingEvent);
+    }
+
+    private static string GenerateManualExternalId()
+    {
+        return $"manual-{Guid.NewGuid():N}";
     }
 
     private static string NormalizeTeamName(string value)

@@ -3,7 +3,7 @@ namespace _4Bet.Application.DTOs;
 
 public class ManageSportEventDto
 {
-    [Required] public string ExternalId { get; set; } = string.Empty;
+    public string? ExternalId { get; set; }
     [Required] public string HomeTeam { get; set; } = string.Empty;
     [Required] public string AwayTeam { get; set; } = string.Empty;
     [Required] public DateTime EventDate { get; set; }
