@@ -1,0 +1,71 @@
+using _4Bet.Infrastructure.Data;
+using _4Bet.Infrastructure.Domain;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace _4BetWebApi.Controllers;
+
+[ApiController]
+[Route("api/admin/users")]
+[Authorize(Roles = "Admin")]
+public class AdminUsersController : ControllerBase
+{
+    private readonly FourBetDbContext _context;
+
+    public AdminUsersController(FourBetDbContext context)
+    {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetUsers()
+    {
+        var users = await _context.Users
+            .Where(u => !u.IsDeleted)
+            .OrderBy(u => u.Email)
+            .Select(u => new
+            {
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                Role = u.Role.ToString(),
+                u.IsEmailVerified,
+                u.IsBdVerified
+            })
+            .ToListAsync();
+
+        return Ok(users);
+    }
+
+    [HttpPut("{id:guid}/role")]
+    public async Task<IActionResult> UpdateUserRole(Guid id, [FromBody] UpdateUserRoleRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Role))
+        {
+            return BadRequest(new { message = "Role is required." });
+        }
+
+        if (!Enum.TryParse<UserRole>(request.Role, true, out var targetRole))
+        {
+            return BadRequest(new { message = "Role must be User, Moderator, or Admin." });
+        }
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found." });
+        }
+
+        user.Role = targetRole;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = $"Role updated to {targetRole}." });
+    }
+}
+
+public class UpdateUserRoleRequest
+{
+    public string Role { get; set; } = string.Empty;
+}

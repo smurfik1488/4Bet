@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using _4Bet.Application.DTOs;
 using _4Bet.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
+using _4Bet.Infrastructure.IRepositories;
 
 namespace _4BetWebApi.Controllers;
 
@@ -13,10 +15,12 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IVerificationService _verificationService;
-    public AuthController(IAuthService authService, IVerificationService verificationService)
+    private readonly IVerificationRepository _verificationRepository;
+    public AuthController(IAuthService authService, IVerificationService verificationService, IVerificationRepository verificationRepository)
     {
         _authService = authService;
         _verificationService = verificationService;
+        _verificationRepository = verificationRepository;
     }
 
     [HttpPost("register")]
@@ -198,6 +202,52 @@ public class AuthController : ControllerBase
         var userId = GetUserId();
         var profile = await _authService.UpdateAvatarAsync(userId, dto);
         return profile is null ? NotFound() : Ok(profile);
+    }
+
+    [Authorize]
+    [HttpGet("verification-status")]
+    public async Task<IActionResult> GetVerificationStatus()
+    {
+        var userId = GetUserId();
+        var requests = await _verificationRepository.GetByUserIdAsync(userId);
+        var latest = requests.FirstOrDefault();
+
+        if (latest == null)
+        {
+            return Ok(new
+            {
+                status = "NotRequested",
+                message = "Verification has not been requested yet.",
+                action = "none"
+            });
+        }
+
+        if (latest.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+        {
+            return Ok(new
+            {
+                status = "Approved",
+                message = "Your documents were approved. You can continue to the dashboard.",
+                action = "dashboard"
+            });
+        }
+
+        if (latest.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
+        {
+            return Ok(new
+            {
+                status = "Rejected",
+                message = "Your documents were rejected. Please return to the start screen and upload a clearer document.",
+                action = "start"
+            });
+        }
+
+        return Ok(new
+        {
+            status = "Pending",
+            message = "Your documents are under review by an administrator.",
+            action = "none"
+        });
     }
 
     private Guid GetUserId()

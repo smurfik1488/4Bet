@@ -21,13 +21,16 @@ public class VerificationRepository : IVerificationRepository
 
     public async Task<VerificationRequest?> GetByIdAsync(Guid id)
     {
-        return await _context.VerificationRequests.FindAsync(id);
+        return await _context.VerificationRequests
+            .Include(r => r.User)
+            .FirstOrDefaultAsync(r => r.Id == id);
     }
 
     public async Task<IEnumerable<VerificationRequest>> GetPendingRequestsAsync()
     {
         // Повертаємо всі запити, які чекають на перевірку, відсортовані від найстаріших
         return await _context.VerificationRequests
+            .Include(r => r.User)
             .Where(r => r.Status == "Pending")
             .OrderBy(r => r.CreatedAt)
             .ToListAsync();
@@ -37,6 +40,7 @@ public class VerificationRepository : IVerificationRepository
     {
         // Може знадобитися, щоб показати юзеру історію його заявок
         return await _context.VerificationRequests
+            .Include(r => r.User)
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();

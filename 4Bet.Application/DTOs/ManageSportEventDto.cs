@@ -13,4 +13,10 @@ public class ManageSportEventDto
     [Range(1.0, 1000.0)] public double DrawOdds { get; set; }
     [Range(1.0, 1000.0)] public double AwayWinOdds { get; set; }
 
+    // Optional live-control fields for moderator/admin panel.
+    public int? HomeScore { get; set; }
+    public int? AwayScore { get; set; }
+    public string? MatchStatus { get; set; }
+    public int? MatchMinute { get; set; }
+
 }

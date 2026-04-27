@@ -174,6 +174,10 @@ public class SportService(
             HomeWinOdds = dto.HomeWinOdds,
             DrawOdds = dto.DrawOdds,
             AwayWinOdds = dto.AwayWinOdds,
+            HomeScore = dto.HomeScore,
+            AwayScore = dto.AwayScore,
+            MatchStatus = string.IsNullOrWhiteSpace(dto.MatchStatus) ? "Not Started" : dto.MatchStatus,
+            MatchMinute = dto.MatchMinute,
             LastUpdated = DateTime.UtcNow
         };
 
@@ -194,6 +198,10 @@ public class SportService(
         existingEvent.HomeWinOdds = dto.HomeWinOdds;
         existingEvent.DrawOdds = dto.DrawOdds;
         existingEvent.AwayWinOdds = dto.AwayWinOdds;
+        existingEvent.HomeScore = dto.HomeScore;
+        existingEvent.AwayScore = dto.AwayScore;
+        existingEvent.MatchStatus = string.IsNullOrWhiteSpace(dto.MatchStatus) ? existingEvent.MatchStatus : dto.MatchStatus;
+        existingEvent.MatchMinute = dto.MatchMinute;
         existingEvent.LastUpdated = DateTime.UtcNow;
 
         await sportRepository.UpdateAsync(existingEvent);

@@ -2,6 +2,7 @@ namespace _4Bet.Application.DTOs;
 
 public class SportEventDto
 {
+    public Guid Id { get; set; }
     public string ExternalId { get; set; } = string.Empty;
     public string HomeTeam { get; set; } = string.Empty;
     public string AwayTeam { get; set; } = string.Empty;
