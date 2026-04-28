@@ -74,8 +74,15 @@ public class SportController(ISportService sportService) : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var createdEvent = await sportService.AddEventAsync(dto);
-        return Ok(createdEvent);
+        try
+        {
+            var createdEvent = await sportService.AddEventAsync(dto);
+            return Ok(createdEvent);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin,Moderator")]
@@ -88,6 +95,10 @@ public class SportController(ISportService sportService) : ControllerBase
         {
             await sportService.UpdateEventAsync(id, dto);
             return NoContent(); // 204 No Content is standard for successful PUT
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (KeyNotFoundException ex)
         {

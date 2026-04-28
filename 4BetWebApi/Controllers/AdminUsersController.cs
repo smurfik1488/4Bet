@@ -1,8 +1,11 @@
 using _4Bet.Infrastructure.Data;
 using _4Bet.Infrastructure.Domain;
+using _4Bet.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace _4BetWebApi.Controllers;
 
@@ -12,10 +15,12 @@ namespace _4BetWebApi.Controllers;
 public class AdminUsersController : ControllerBase
 {
     private readonly FourBetDbContext _context;
+    private readonly IAuditLogService _auditLogService;
 
-    public AdminUsersController(FourBetDbContext context)
+    public AdminUsersController(FourBetDbContext context, IAuditLogService auditLogService)
     {
         _context = context;
+        _auditLogService = auditLogService;
     }
 
     [HttpGet]
@@ -60,8 +65,23 @@ public class AdminUsersController : ControllerBase
 
         user.Role = targetRole;
         await _context.SaveChangesAsync();
+        await _auditLogService.LogAsync(
+            action: "UserRoleChanged",
+            entityType: "User",
+            entityId: user.Id,
+            userId: GetActorUserId(),
+            summary: $"User role updated to {targetRole}.",
+            payload: new { TargetUser = user.Email, targetRole });
 
         return Ok(new { message = $"Role updated to {targetRole}." });
+    }
+
+    private Guid? GetActorUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue(JwtRegisteredClaimNames.NameId)
+                    ?? User.FindFirstValue("nameid");
+        return Guid.TryParse(claim, out var userId) ? userId : null;
     }
 }
 

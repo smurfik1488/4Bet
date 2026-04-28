@@ -57,8 +57,12 @@ builder.Services.AddScoped<IVerificationService, VerificationService>();
 builder.Services.AddScoped<ISportService, SportService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IBetService, BetService>();
+builder.Services.AddScoped<IBetAnalyticsService, BetAnalyticsService>();
+builder.Services.AddScoped<IDataSeedService, DataSeedService>();
 builder.Services.AddScoped<IAdminVerificationService, AdminVerificationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IBusinessRulesService, BusinessRulesService>();
 
 builder.Services.AddScoped<IVerificationRepository, VerificationRepository>();
 builder.Services.AddScoped<ISportRepository, SportRepository>();

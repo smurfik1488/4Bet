@@ -10,7 +10,7 @@ namespace _4BetWebApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class BetController(IBetService betService) : ControllerBase
+public class BetController(IBetService betService, IBetAnalyticsService betAnalyticsService) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<BetDto>> PlaceBet([FromBody] PlaceBetRequestDto request, CancellationToken cancellationToken)
@@ -46,6 +46,25 @@ public class BetController(IBetService betService) : ControllerBase
         var userId = GetUserId();
         var bet = await betService.GetMyBetByIdAsync(userId, id);
         return bet is null ? NotFound() : Ok(bet);
+    }
+
+    [HttpGet("analytics/mine")]
+    public async Task<ActionResult<BetAnalyticsDto>> GetMyAnalytics([FromQuery] DateTime from, [FromQuery] DateTime to, CancellationToken cancellationToken)
+    {
+        if (from == default || to == default)
+        {
+            return BadRequest(new { message = "Query params 'from' and 'to' are required (ISO date)." });
+        }
+
+        var maxRangeDays = 366;
+        if (Math.Abs((to - from).TotalDays) > maxRangeDays)
+        {
+            return BadRequest(new { message = $"Date range cannot exceed {maxRangeDays} days." });
+        }
+
+        var userId = GetUserId();
+        var analytics = await betAnalyticsService.GetUserAnalyticsAsync(userId, from.ToUniversalTime(), to.ToUniversalTime(), cancellationToken);
+        return Ok(analytics);
     }
 
     private Guid GetUserId()

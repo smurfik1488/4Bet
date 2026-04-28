@@ -11,15 +11,18 @@ public class AdminVerificationService : IAdminVerificationService
     private readonly IVerificationRepository _requestRepository;
     private readonly IAuthRepository _authRepository;
     private readonly FourBetDbContext _context;
+    private readonly IAuditLogService _auditLogService;
 
     public AdminVerificationService(
         IVerificationRepository requestRepository, 
         IAuthRepository authRepository, 
-        FourBetDbContext context)
+        FourBetDbContext context,
+        IAuditLogService auditLogService)
     {
         _requestRepository = requestRepository;
         _authRepository = authRepository;
         _context = context;
+        _auditLogService = auditLogService;
     }
 
     public async Task<IEnumerable<VerificationRequest>> GetPendingRequestsAsync()
@@ -47,6 +50,13 @@ public class AdminVerificationService : IAdminVerificationService
         // SaveChangesAsync збереже і оновлений запит, і оновленого юзера, 
         // бо EF Core відслідковує ці об'єкти
         await _context.SaveChangesAsync(); 
+        await _auditLogService.LogAsync(
+            action: "VerificationApproved",
+            entityType: "VerificationRequest",
+            entityId: request.Id,
+            userId: request.UserId,
+            summary: "Verification request approved by admin.",
+            payload: new { request.Status });
         
         return "SUCCESS";
     }
@@ -60,6 +70,13 @@ public class AdminVerificationService : IAdminVerificationService
 
         request.Status = "Rejected";
         await _context.SaveChangesAsync();
+        await _auditLogService.LogAsync(
+            action: "VerificationRejected",
+            entityType: "VerificationRequest",
+            entityId: request.Id,
+            userId: request.UserId,
+            summary: "Verification request rejected by admin.",
+            payload: new { request.Status });
 
         return "SUCCESS";
     }

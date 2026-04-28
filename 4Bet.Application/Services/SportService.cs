@@ -11,7 +11,9 @@ namespace _4Bet.Application.Services;
 
 public class SportService(
     ISportRepository sportRepository,
-    IMapper mapper) : ISportService
+    IMapper mapper,
+    IBusinessRulesService businessRules,
+    IAuditLogService auditLogService) : ISportService
 {
     private sealed record MissingTeamLogoRequest(string Name, string Normalized);
     private static readonly HttpClient LogoHttpClient = new()
@@ -164,6 +166,9 @@ public class SportService(
     
     public async Task<SportEventDto> AddEventAsync(ManageSportEventDto dto)
     {
+        businessRules.ValidateSportEventInput(dto);
+        businessRules.EnsureValidOdds(dto.HomeWinOdds, dto.DrawOdds, dto.AwayWinOdds);
+
         var newEvent = new SportEvent
         {
             ExternalId = string.IsNullOrWhiteSpace(dto.ExternalId) ? GenerateManualExternalId() : dto.ExternalId.Trim(),
@@ -176,17 +181,27 @@ public class SportService(
             AwayWinOdds = dto.AwayWinOdds,
             HomeScore = dto.HomeScore,
             AwayScore = dto.AwayScore,
-            MatchStatus = string.IsNullOrWhiteSpace(dto.MatchStatus) ? "Not Started" : dto.MatchStatus,
+            MatchStatus = businessRules.NormalizeMatchStatus(dto.MatchStatus, "NS"),
             MatchMinute = dto.MatchMinute,
             LastUpdated = DateTime.UtcNow
         };
 
         await sportRepository.AddAsync(newEvent);
+        await auditLogService.LogAsync(
+            action: "SportEventCreated",
+            entityType: "SportEvent",
+            entityId: newEvent.Id,
+            userId: null,
+            summary: $"Event created: {newEvent.HomeTeam} vs {newEvent.AwayTeam}.",
+            payload: new { newEvent.EventDate, newEvent.SportKey, newEvent.ExternalId });
         return mapper.Map<SportEventDto>(newEvent);
     }
 
     public async Task UpdateEventAsync(Guid id, ManageSportEventDto dto)
     {
+        businessRules.ValidateSportEventInput(dto);
+        businessRules.EnsureValidOdds(dto.HomeWinOdds, dto.DrawOdds, dto.AwayWinOdds);
+
         var existingEvent = await sportRepository.GetByIdAsync(id) 
                             ?? throw new KeyNotFoundException("Event not found.");
 
@@ -203,11 +218,20 @@ public class SportService(
         existingEvent.AwayWinOdds = dto.AwayWinOdds;
         existingEvent.HomeScore = dto.HomeScore;
         existingEvent.AwayScore = dto.AwayScore;
-        existingEvent.MatchStatus = string.IsNullOrWhiteSpace(dto.MatchStatus) ? existingEvent.MatchStatus : dto.MatchStatus;
+        existingEvent.MatchStatus = string.IsNullOrWhiteSpace(dto.MatchStatus)
+            ? existingEvent.MatchStatus
+            : businessRules.NormalizeMatchStatus(dto.MatchStatus, existingEvent.MatchStatus);
         existingEvent.MatchMinute = dto.MatchMinute;
         existingEvent.LastUpdated = DateTime.UtcNow;
 
         await sportRepository.UpdateAsync(existingEvent);
+        await auditLogService.LogAsync(
+            action: "SportEventUpdated",
+            entityType: "SportEvent",
+            entityId: existingEvent.Id,
+            userId: null,
+            summary: $"Event updated: {existingEvent.HomeTeam} vs {existingEvent.AwayTeam}.",
+            payload: new { existingEvent.EventDate, existingEvent.SportKey, existingEvent.MatchStatus });
     }
 
     public async Task DeleteEventAsync(Guid id)
@@ -216,6 +240,13 @@ public class SportService(
                             ?? throw new KeyNotFoundException("Event not found.");
 
         await sportRepository.DeleteAsync(existingEvent);
+        await auditLogService.LogAsync(
+            action: "SportEventDeleted",
+            entityType: "SportEvent",
+            entityId: existingEvent.Id,
+            userId: null,
+            summary: $"Event deleted: {existingEvent.HomeTeam} vs {existingEvent.AwayTeam}.",
+            payload: new { existingEvent.ExternalId, existingEvent.EventDate });
     }
 
     private static string GenerateManualExternalId()

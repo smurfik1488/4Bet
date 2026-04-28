@@ -13,6 +13,8 @@ public class BetService(
     ISportRepository sportRepository,
     ISportNotificationService notificationService,
     IAuthRepository authRepository,
+    IBusinessRulesService businessRules,
+    IAuditLogService auditLogService,
     FourBetDbContext dbContext) : IBetService
 {
     public async Task<BetDto> PlaceBetAsync(Guid userId, PlaceBetRequestDto request, CancellationToken cancellationToken = default)
@@ -23,15 +25,14 @@ public class BetService(
             throw new InvalidOperationException("User not found.");
         }
 
-        if (!user.IsBdVerified)
-        {
-            throw new InvalidOperationException("Please verify your documents before placing bets.");
-        }
+        businessRules.EnsureVerified(user, "placing bets");
 
         if (request.Legs.Count == 0)
         {
             throw new InvalidOperationException("Bet must contain at least one leg.");
         }
+
+        businessRules.EnsurePositiveAmount(request.Stake, "Bet stake");
 
         var wallet = await walletRepository.GetByUserIdAsync(userId);
         if (wallet is null)
@@ -112,6 +113,14 @@ public class BetService(
         await tx.CommitAsync(cancellationToken);
 
         var dto = MapToDto(bet);
+        await auditLogService.LogAsync(
+            action: "BetPlaced",
+            entityType: "Bet",
+            entityId: bet.Id,
+            userId: userId,
+            summary: $"User placed bet with {bet.Legs.Count} legs.",
+            payload: new { bet.Stake, bet.CombinedOdds, bet.PotentialPayout },
+            cancellationToken: cancellationToken);
         await notificationService.BroadcastBetAcceptedAsync(userId, dto);
         return dto;
     }
@@ -206,6 +215,14 @@ public class BetService(
 
         foreach (var bet in changedBets)
         {
+            await auditLogService.LogAsync(
+                action: "BetSettled",
+                entityType: "Bet",
+                entityId: bet.Id,
+                userId: bet.UserId,
+                summary: $"Bet settled as {bet.Status}.",
+                payload: new { bet.Status, bet.SettledPayout, bet.SettledAt },
+                cancellationToken: cancellationToken);
             await notificationService.BroadcastBetSettledAsync(bet.UserId, new BetLifecycleUpdateDto
             {
                 BetId = bet.Id,

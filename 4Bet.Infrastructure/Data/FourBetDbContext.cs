@@ -16,6 +16,7 @@ public class FourBetDbContext : DbContext {
     public DbSet<Bet> Bets { get; set; }
     public DbSet<BetLeg> BetLegs { get; set; }
     public DbSet<TeamIdentity> TeamIdentities { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -60,6 +61,13 @@ public class FourBetDbContext : DbContext {
         {
             entity.HasIndex(e => new { e.Provider, e.ProviderTeamId }).IsUnique();
             entity.HasIndex(e => e.TeamNameNormalized);
+        });
+
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasIndex(e => e.CreatedAt);
+            entity.HasIndex(e => new { e.EntityType, e.EntityId });
+            entity.HasIndex(e => e.UserId);
         });
     }
     

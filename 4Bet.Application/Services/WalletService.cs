@@ -6,7 +6,12 @@ using _4Bet.Infrastructure.IRepositories;
 
 namespace _4Bet.Application.Services;
 
-public class WalletService(IWalletRepository walletRepository, IAuthRepository authRepository, FourBetDbContext dbContext) : IWalletService
+public class WalletService(
+    IWalletRepository walletRepository,
+    IAuthRepository authRepository,
+    IBusinessRulesService businessRules,
+    IAuditLogService auditLogService,
+    FourBetDbContext dbContext) : IWalletService
 {
     public async Task<WalletBalanceDto?> GetBalanceAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -22,15 +27,8 @@ public class WalletService(IWalletRepository walletRepository, IAuthRepository a
             return null;
         }
 
-        if (!user.IsBdVerified)
-        {
-            throw new InvalidOperationException("Please verify your documents before depositing funds.");
-        }
-
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Top-up amount must be greater than zero.");
-        }
+        businessRules.EnsureVerified(user, "depositing funds");
+        businessRules.EnsurePositiveAmount(amount, "Top-up");
 
         var wallet = await walletRepository.GetByUserIdAsync(userId);
         if (wallet is null)
@@ -54,6 +52,14 @@ public class WalletService(IWalletRepository walletRepository, IAuthRepository a
         });
 
         await walletRepository.SaveChangesAsync(cancellationToken);
+        await auditLogService.LogAsync(
+            action: "WalletTopUp",
+            entityType: "Wallet",
+            entityId: wallet.Id,
+            userId: userId,
+            summary: "Wallet topped up.",
+            payload: new { amount, wallet.Balance },
+            cancellationToken: cancellationToken);
         return new WalletBalanceDto { Balance = wallet.Balance };
     }
 
@@ -65,15 +71,8 @@ public class WalletService(IWalletRepository walletRepository, IAuthRepository a
             return null;
         }
 
-        if (!user.IsBdVerified)
-        {
-            throw new InvalidOperationException("Please verify your documents before withdrawing funds.");
-        }
-
-        if (amount <= 0)
-        {
-            throw new InvalidOperationException("Withdraw amount must be greater than zero.");
-        }
+        businessRules.EnsureVerified(user, "withdrawing funds");
+        businessRules.EnsurePositiveAmount(amount, "Withdraw");
 
         var wallet = await walletRepository.GetByUserIdAsync(userId);
         if (wallet is null)
@@ -102,6 +101,14 @@ public class WalletService(IWalletRepository walletRepository, IAuthRepository a
         });
 
         await walletRepository.SaveChangesAsync(cancellationToken);
+        await auditLogService.LogAsync(
+            action: "WalletWithdraw",
+            entityType: "Wallet",
+            entityId: wallet.Id,
+            userId: userId,
+            summary: "Wallet withdrawal completed.",
+            payload: new { amount, wallet.Balance },
+            cancellationToken: cancellationToken);
         return new WalletBalanceDto { Balance = wallet.Balance };
     }
 }
