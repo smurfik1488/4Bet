@@ -33,18 +33,53 @@ public class BetAnalyticsService(FourBetDbContext dbContext) : IBetAnalyticsServ
             })
             .ToListAsync(cancellationToken);
 
-        var points = rows
+        var grouped = rows
             .GroupBy(x => x.Day)
-            .OrderBy(g => g.Key)
-            .Select(g => new BetAnalyticsPointDto
+            .ToDictionary(
+                g => g.Key,
+                g => new
+                {
+                    BetsCount = g.Count(),
+                    WonCount = g.Count(x => x.Status == BetStatus.Won),
+                    LostCount = g.Count(x => x.Status == BetStatus.Lost),
+                    StakeSum = g.Sum(x => x.Stake),
+                    PayoutSum = g.Sum(x => x.Payout)
+                });
+
+        var points = new List<BetAnalyticsPointDto>();
+        var dayCursor = normalizedFrom.Date;
+        var dayEnd = normalizedTo.Date;
+        while (dayCursor <= dayEnd)
+        {
+            if (grouped.TryGetValue(dayCursor, out var dayData))
             {
-                DayUtc = DateTime.SpecifyKind(g.Key, DateTimeKind.Utc),
-                BetsCount = g.Count(),
-                StakeSum = g.Sum(x => x.Stake),
-                PayoutSum = g.Sum(x => x.Payout),
-                Net = g.Sum(x => x.Payout) - g.Sum(x => x.Stake)
-            })
-            .ToList();
+                points.Add(new BetAnalyticsPointDto
+                {
+                    DayUtc = DateTime.SpecifyKind(dayCursor, DateTimeKind.Utc),
+                    BetsCount = dayData.BetsCount,
+                    WonCount = dayData.WonCount,
+                    LostCount = dayData.LostCount,
+                    StakeSum = dayData.StakeSum,
+                    PayoutSum = dayData.PayoutSum,
+                    Net = dayData.PayoutSum - dayData.StakeSum
+                });
+            }
+            else
+            {
+                points.Add(new BetAnalyticsPointDto
+                {
+                    DayUtc = DateTime.SpecifyKind(dayCursor, DateTimeKind.Utc),
+                    BetsCount = 0,
+                    WonCount = 0,
+                    LostCount = 0,
+                    StakeSum = 0,
+                    PayoutSum = 0,
+                    Net = 0
+                });
+            }
+
+            dayCursor = dayCursor.AddDays(1);
+        }
 
         var totalBets = rows.Count;
         var totalStake = rows.Sum(x => x.Stake);

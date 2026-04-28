@@ -16,6 +16,8 @@ public class BetAnalyticsPointDto
 {
     public DateTime DayUtc { get; set; }
     public int BetsCount { get; set; }
+    public int WonCount { get; set; }
+    public int LostCount { get; set; }
     public decimal StakeSum { get; set; }
     public decimal PayoutSum { get; set; }
     public decimal Net { get; set; }
