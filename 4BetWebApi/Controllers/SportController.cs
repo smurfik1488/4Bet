@@ -3,6 +3,7 @@ using _4Bet.Application.DTOs;
 using _4Bet.Application.Services;
 using _4Bet.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 
 namespace _4BetWebApi.Controllers;
 
@@ -118,6 +119,32 @@ public class SportController(ISportService sportService) : ControllerBase
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Admin,Moderator")]
+    [HttpPost("teams/import-json")]
+    [RequestSizeLimit(10_000_000)]
+    public async Task<ActionResult<TeamImportResultDto>> ImportTeamsFromJson([FromForm] IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "JSON file is required." });
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var result = await sportService.ImportTeamsFromJsonAsync(stream, cancellationToken);
+            return Ok(result);
+        }
+        catch (JsonException)
+        {
+            return BadRequest(new { message = "Invalid JSON file." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

@@ -8,4 +8,5 @@ public interface ISportService
     Task<SportEventDto> AddEventAsync(ManageSportEventDto dto);
     Task UpdateEventAsync(Guid id, ManageSportEventDto dto);
     Task DeleteEventAsync(Guid id);
+    Task<TeamImportResultDto> ImportTeamsFromJsonAsync(Stream jsonStream, CancellationToken cancellationToken = default);
 }

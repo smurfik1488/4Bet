@@ -1,0 +1,19 @@
+{
+  "source": "moderator/manual-import",
+  "generatedAtUtc": "2026-04-29T00:00:00Z",
+  "count": 3,
+  "teams": [
+    {
+      "name": "Arsenal",
+      "logoUrl": "https://example.com/logos/arsenal.png"
+    },
+    {
+      "name": "Chelsea",
+      "logoUrl": "https://example.com/logos/chelsea.png"
+    },
+    {
+      "name": "Liverpool",
+      "logoUrl": null
+    }
+  ]
+}

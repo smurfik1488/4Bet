@@ -5,6 +5,7 @@ using _4Bet.Infrastructure.Domain;
 using _4Bet.Infrastructure.IRepositories;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace _4Bet.Application.Services;
@@ -249,6 +250,76 @@ public class SportService(
             payload: new { existingEvent.ExternalId, existingEvent.EventDate });
     }
 
+    public async Task<TeamImportResultDto> ImportTeamsFromJsonAsync(Stream jsonStream, CancellationToken cancellationToken = default)
+    {
+        using var document = await JsonDocument.ParseAsync(jsonStream, cancellationToken: cancellationToken);
+        var parsedRows = ParseTeamRows(document.RootElement);
+        if (parsedRows.Count == 0)
+        {
+            throw new InvalidOperationException("No team rows found in JSON file.");
+        }
+
+        var validRows = parsedRows
+            .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+            .Select(x => new
+            {
+                Name = x.Name.Trim(),
+                Normalized = NormalizeTeamName(x.Name),
+                x.LogoUrl
+            })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Normalized))
+            .ToList();
+
+        var uniqueByNormalized = validRows
+            .GroupBy(x => x.Normalized)
+            .Select(g => g.First())
+            .ToList();
+        var normalizedNames = uniqueByNormalized.Select(x => x.Normalized).ToList();
+        var existing = await sportRepository.GetTeamIdentitiesByNormalizedNamesAsync(normalizedNames);
+        var existingNormalized = existing
+            .Select(x => x.TeamNameNormalized)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var newIdentities = uniqueByNormalized
+            .Where(x => !existingNormalized.Contains(x.Normalized))
+            .Select(x => new TeamIdentity
+            {
+                Provider = "ModeratorJson",
+                ProviderTeamId = GetStableId($"moderator-json:{x.Normalized}"),
+                TeamName = x.Name,
+                TeamNameNormalized = x.Normalized,
+                LogoUrl = string.IsNullOrWhiteSpace(x.LogoUrl) ? null : x.LogoUrl,
+                LastSeenAt = DateTime.UtcNow
+            })
+            .ToList();
+
+        if (newIdentities.Count > 0)
+        {
+            await sportRepository.UpsertTeamIdentitiesAsync(newIdentities);
+        }
+
+        var result = new TeamImportResultDto
+        {
+            TotalRows = parsedRows.Count,
+            UniqueRows = uniqueByNormalized.Count,
+            InsertedRows = newIdentities.Count,
+            ExistingRows = uniqueByNormalized.Count - newIdentities.Count,
+            InvalidRows = Math.Max(0, parsedRows.Count - validRows.Count)
+        };
+
+        await auditLogService.LogAsync(
+            action: "TeamIdentityJsonImported",
+            entityType: "TeamIdentity",
+            entityId: null,
+            userId: null,
+            summary: $"Moderator team import. Inserted: {result.InsertedRows}, existing: {result.ExistingRows}, invalid: {result.InvalidRows}.",
+            payload: result,
+            cancellationToken: cancellationToken);
+
+        return result;
+    }
+
     private static string GenerateManualExternalId()
     {
         return $"manual-{Guid.NewGuid():N}";
@@ -410,5 +481,64 @@ public class SportService(
 
         [JsonPropertyName("strTeamBadge")]
         public string? Badge { get; set; }
+    }
+
+    private sealed record TeamJsonRow(string Name, string? LogoUrl);
+
+    private static List<TeamJsonRow> ParseTeamRows(JsonElement root)
+    {
+        var rows = new List<TeamJsonRow>();
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in root.EnumerateArray())
+            {
+                TryAppendTeamRow(item, rows);
+            }
+            return rows;
+        }
+
+        if (root.ValueKind == JsonValueKind.Object &&
+            root.TryGetProperty("teams", out var teamsElement) &&
+            teamsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in teamsElement.EnumerateArray())
+            {
+                TryAppendTeamRow(item, rows);
+            }
+        }
+
+        return rows;
+    }
+
+    private static void TryAppendTeamRow(JsonElement element, List<TeamJsonRow> rows)
+    {
+        if (element.ValueKind == JsonValueKind.String)
+        {
+            var rawName = element.GetString() ?? string.Empty;
+            rows.Add(new TeamJsonRow(rawName, null));
+            return;
+        }
+
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        var name = TryGetString(element, "name")
+            ?? TryGetString(element, "teamName")
+            ?? TryGetString(element, "clubName")
+            ?? string.Empty;
+        var logoUrl = TryGetString(element, "logoUrl") ?? TryGetString(element, "logo");
+        rows.Add(new TeamJsonRow(name, logoUrl));
+    }
+
+    private static string? TryGetString(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return property.GetString();
     }
 }
