@@ -3,6 +3,7 @@ using _4Bet.Application.DTOs;
 using _4Bet.Application.Services;
 using _4Bet.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace _4BetWebApi.Controllers;
@@ -145,6 +146,14 @@ public class SportController(ISportService sportService) : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (DbUpdateException ex)
+        {
+            return Conflict(new { message = ex.InnerException?.Message ?? ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
         }
     }
 }

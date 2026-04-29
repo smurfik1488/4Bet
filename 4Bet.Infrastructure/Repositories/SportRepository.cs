@@ -102,11 +102,38 @@ public class SportRepository(FourBetDbContext context) : ISportRepository
 
     public async Task UpsertTeamIdentitiesAsync(IEnumerable<TeamIdentity> teamIdentities)
     {
-        foreach (var incoming in teamIdentities)
+        var incomingItems = teamIdentities.ToList();
+        if (incomingItems.Count == 0)
         {
-            var existing = await context.TeamIdentities.FirstOrDefaultAsync(x =>
-                x.Provider == incoming.Provider && x.ProviderTeamId == incoming.ProviderTeamId);
+            return;
+        }
 
+        var existingByKey = new Dictionary<(string Provider, int ProviderTeamId), TeamIdentity>();
+        foreach (var providerGroup in incomingItems
+                     .GroupBy(x => x.Provider)
+                     .Where(x => !string.IsNullOrWhiteSpace(x.Key)))
+        {
+            var providerTeamIds = providerGroup
+                .Select(x => x.ProviderTeamId)
+                .Distinct()
+                .ToList();
+            if (providerTeamIds.Count == 0)
+            {
+                continue;
+            }
+
+            var existingRows = await context.TeamIdentities
+                .Where(x => x.Provider == providerGroup.Key && providerTeamIds.Contains(x.ProviderTeamId))
+                .ToListAsync();
+            foreach (var existing in existingRows)
+            {
+                existingByKey[(existing.Provider, existing.ProviderTeamId)] = existing;
+            }
+        }
+
+        foreach (var incoming in incomingItems)
+        {
+            existingByKey.TryGetValue((incoming.Provider, incoming.ProviderTeamId), out var existing);
             if (existing == null)
             {
                 await context.TeamIdentities.AddAsync(incoming);
@@ -136,6 +163,35 @@ public class SportRepository(FourBetDbContext context) : ISportRepository
         return await context.TeamIdentities
             .Where(x => names.Contains(x.TeamNameNormalized))
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<TeamIdentity>> GetTeamIdentitiesByProviderAndNormalizedNamesAsync(string provider, IEnumerable<string> normalizedNames)
+    {
+        var names = normalizedNames
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct()
+            .ToList();
+        if (string.IsNullOrWhiteSpace(provider) || names.Count == 0)
+        {
+            return Array.Empty<TeamIdentity>();
+        }
+
+        return await context.TeamIdentities
+            .Where(x => x.Provider == provider && names.Contains(x.TeamNameNormalized))
+            .ToListAsync();
+    }
+
+    public async Task<int> GetMaxProviderTeamIdAsync(string provider)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            return 0;
+        }
+
+        return await context.TeamIdentities
+            .Where(x => x.Provider == provider)
+            .Select(x => (int?)x.ProviderTeamId)
+            .MaxAsync() ?? 0;
     }
 
     public async Task AddAsync(SportEvent sportEvent)

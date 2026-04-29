@@ -252,6 +252,8 @@ public class SportService(
 
     public async Task<TeamImportResultDto> ImportTeamsFromJsonAsync(Stream jsonStream, CancellationToken cancellationToken = default)
     {
+        const string moderatorProvider = "ModeratorJson";
+
         using var document = await JsonDocument.ParseAsync(jsonStream, cancellationToken: cancellationToken);
         var parsedRows = ParseTeamRows(document.RootElement);
         if (parsedRows.Count == 0)
@@ -275,36 +277,64 @@ public class SportService(
             .Select(g => g.First())
             .ToList();
         var normalizedNames = uniqueByNormalized.Select(x => x.Normalized).ToList();
-        var existing = await sportRepository.GetTeamIdentitiesByNormalizedNamesAsync(normalizedNames);
-        var existingNormalized = existing
-            .Select(x => x.TeamNameNormalized)
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToHashSet(StringComparer.Ordinal);
+        var existingModeratorRows = await sportRepository.GetTeamIdentitiesByProviderAndNormalizedNamesAsync(
+            moderatorProvider,
+            normalizedNames);
+        var existingModeratorByNormalized = existingModeratorRows
+            .GroupBy(x => x.TeamNameNormalized)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.LastSeenAt).First(), StringComparer.Ordinal);
 
-        var newIdentities = uniqueByNormalized
-            .Where(x => !existingNormalized.Contains(x.Normalized))
-            .Select(x => new TeamIdentity
-            {
-                Provider = "ModeratorJson",
-                ProviderTeamId = GetStableId($"moderator-json:{x.Normalized}"),
-                TeamName = x.Name,
-                TeamNameNormalized = x.Normalized,
-                LogoUrl = string.IsNullOrWhiteSpace(x.LogoUrl) ? null : x.LogoUrl,
-                LastSeenAt = DateTime.UtcNow
-            })
-            .ToList();
+        var nextProviderTeamId = await sportRepository.GetMaxProviderTeamIdAsync(moderatorProvider);
+        var importedIdentities = new List<TeamIdentity>(uniqueByNormalized.Count);
+        var insertedRows = 0;
+        var updatedRows = 0;
 
-        if (newIdentities.Count > 0)
+        foreach (var row in uniqueByNormalized)
         {
-            await sportRepository.UpsertTeamIdentitiesAsync(newIdentities);
+            if (existingModeratorByNormalized.TryGetValue(row.Normalized, out var existingModerator))
+            {
+                importedIdentities.Add(new TeamIdentity
+                {
+                    Provider = moderatorProvider,
+                    ProviderTeamId = existingModerator.ProviderTeamId,
+                    TeamName = row.Name,
+                    TeamNameNormalized = row.Normalized,
+                    LogoUrl = string.IsNullOrWhiteSpace(row.LogoUrl) ? existingModerator.LogoUrl : row.LogoUrl,
+                    LastSeenAt = DateTime.UtcNow
+                });
+                updatedRows += 1;
+                continue;
+            }
+
+            if (nextProviderTeamId == int.MaxValue)
+            {
+                throw new InvalidOperationException("ModeratorJson provider id range is exhausted.");
+            }
+
+            nextProviderTeamId += 1;
+            importedIdentities.Add(new TeamIdentity
+            {
+                Provider = moderatorProvider,
+                ProviderTeamId = nextProviderTeamId,
+                TeamName = row.Name,
+                TeamNameNormalized = row.Normalized,
+                LogoUrl = string.IsNullOrWhiteSpace(row.LogoUrl) ? null : row.LogoUrl,
+                LastSeenAt = DateTime.UtcNow
+            });
+            insertedRows += 1;
+        }
+
+        if (importedIdentities.Count > 0)
+        {
+            await sportRepository.UpsertTeamIdentitiesAsync(importedIdentities);
         }
 
         var result = new TeamImportResultDto
         {
             TotalRows = parsedRows.Count,
             UniqueRows = uniqueByNormalized.Count,
-            InsertedRows = newIdentities.Count,
-            ExistingRows = uniqueByNormalized.Count - newIdentities.Count,
+            InsertedRows = insertedRows,
+            ExistingRows = updatedRows,
             InvalidRows = Math.Max(0, parsedRows.Count - validRows.Count)
         };
 

@@ -16,6 +16,8 @@ public interface ISportRepository
     Task<IReadOnlyList<string>> GetFinishedEventExternalIdsAsync();
     Task UpsertTeamIdentitiesAsync(IEnumerable<TeamIdentity> teamIdentities);
     Task<IReadOnlyList<TeamIdentity>> GetTeamIdentitiesByNormalizedNamesAsync(IEnumerable<string> normalizedNames);
+    Task<IReadOnlyList<TeamIdentity>> GetTeamIdentitiesByProviderAndNormalizedNamesAsync(string provider, IEnumerable<string> normalizedNames);
+    Task<int> GetMaxProviderTeamIdAsync(string provider);
     Task AddAsync(SportEvent sportEvent);
     Task UpdateAsync(SportEvent sportEvent);
     Task DeleteAsync(SportEvent sportEvent);
